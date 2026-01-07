@@ -1,0 +1,40 @@
+name: Setup Nix
+description: Install Nix with dev shell and optional KVM support
+
+inputs:
+  enable-kvm:
+    description: Enable KVM for NixOS VM tests
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - name: Enable KVM group permissions
+      if: inputs.enable-kvm == 'true'
+      shell: bash
+      run: |
+        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+        sudo udevadm control --reload-rules
+        sudo udevadm trigger --name-match=kvm
+
+    - name: Install Nix
+      uses: cachix/install-nix-action@v31
+      with:
+        extra_nix_config: |
+          experimental-features = nix-command flakes
+          system-features = nixos-test benchmark big-parallel kvm
+
+    - name: Setup magic-nix-cache
+      uses: DeterminateSystems/magic-nix-cache-action@main
+
+    - name: Install direnv
+      shell: bash
+      run: |
+        nix profile install nixpkgs#direnv nixpkgs#nix-direnv
+        echo 'source $HOME/.nix-profile/share/nix-direnv/direnvrc' >> "$HOME/.direnvrc"
+
+    - name: Load dev shell environment
+      shell: bash
+      run: |
+        direnv allow .
+        direnv export json | jq -r 'to_entries[] | select(.value | contains("\n") | not) | "\(.key)=\(.value)"' >> "$GITHUB_ENV"
