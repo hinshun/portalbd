@@ -1,0 +1,43 @@
+name: Nightly DST
+
+on:
+  schedule:
+    # Run at 2 AM UTC every day
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      seed:
+        description: 'Optional seed for reproducible DST run'
+        required: false
+        type: string
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  dst-nightly:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Nix
+        uses: ./.github/actions/setup-nix
+
+      - name: Run nightly DST (long-running)
+        env:
+          RUSTFLAGS: "--cfg tokio_unstable"
+          DST_SEED: ${{ inputs.seed }}
+        run: |
+          echo "Starting nightly DST run at $(date)"
+          cargo test -p portalbd-dst simulation -- --ignored --nocapture
+          echo "Completed nightly DST run at $(date)"
+
+      - name: Upload failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dst-failure-${{ github.run_id }}
+          path: target/dst-failures/
+          if-no-files-found: ignore
+          retention-days: 30

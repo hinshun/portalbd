@@ -1,0 +1,91 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: "-D warnings"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Nix
+        uses: ./.github/actions/setup-nix
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Run clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Build all crates
+        run: cargo build --all-targets
+
+      - name: Run unit tests
+        run: cargo test --workspace --exclude portalbd-dst
+
+  dst-quick:
+    runs-on: ubuntu-latest
+    needs: [check]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Nix
+        uses: ./.github/actions/setup-nix
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Run quick DST (100 iterations)
+        env:
+          RUSTFLAGS: "--cfg tokio_unstable"
+        run: cargo test -p portalbd-dst simulation
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [check]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Nix
+        uses: ./.github/actions/setup-nix
+
+      - name: Build portalbd
+        run: nix build
+
+  nixos-tests:
+    runs-on: ubuntu-latest
+    needs: [build]
+    strategy:
+      fail-fast: false
+      matrix:
+        test:
+          - basic
+          - crash-recovery
+          - snapshot-semantics
+          - resource-exhaustion
+          - pjdfs
+          - csi-node
+          - csi-k3s
+          - trace-mkfs
+          - trace-pgbench
+          - trace-minecraft
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Nix
+        uses: ./.github/actions/setup-nix
+        with:
+          enable-kvm: 'true'
+
+      - name: Run ${{ matrix.test }} test
+        run: nix run -L .#test-${{ matrix.test }}
