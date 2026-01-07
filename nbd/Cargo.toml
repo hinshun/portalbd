@@ -1,0 +1,22 @@
+[package]
+name = "nbd"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+description = "NBD (Network Block Device) protocol implementation"
+
+[features]
+default = []
+# Enable kernel NBD device support (Linux only)
+device = ["nix"]
+
+[dependencies]
+tokio.workspace = true
+bytes.workspace = true
+thiserror.workspace = true
+
+# Optional: for kernel NBD device ioctls
+nix = { version = "0.30", features = ["ioctl", "fs"], optional = true }
+
+[dev-dependencies]
+tempfile.workspace = true

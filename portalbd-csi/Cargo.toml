@@ -1,0 +1,45 @@
+[package]
+name = "portalbd-csi"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+description = "CSI driver for portalbd"
+
+[dependencies]
+portalbd = { path = "../portalbd" }
+nbd = { path = "../nbd", features = ["device"] }
+tokio.workspace = true
+thiserror.workspace = true
+anyhow.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+toml.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+uuid.workspace = true
+chrono.workspace = true
+clap.workspace = true
+
+# gRPC
+tonic = "0.12"
+tonic-reflection = "0.12"
+prost = "0.13"
+prost-types = "0.13"
+
+# Utilities
+hostname = "0.4"
+tokio-stream = { version = "0.1", features = ["net"] }
+
+[build-dependencies]
+tonic-build = "0.12"
+
+[[bin]]
+name = "portalbd-csi"
+path = "src/main.rs"
+
+[lib]
+name = "portalbd_csi"
+path = "src/lib.rs"
+
+[dev-dependencies]
+tempfile = "3"

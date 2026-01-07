@@ -1,0 +1,37 @@
+[package]
+name = "portalbd-trace"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+description = "Trace replay for portalbd performance testing"
+
+[dependencies]
+async-trait = { workspace = true }
+tokio = { workspace = true }
+futures = "0.3"
+slatedb = { workspace = true }
+object_store = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+bytes = { workspace = true }
+chrono = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+clap = { workspace = true }
+portalbd = { path = "../portalbd" }
+nbd = { path = "../nbd" }
+pprof = { version = "0.14", features = ["flamegraph", "prost-codec"] }
+
+[dev-dependencies]
+tempfile = { workspace = true }
+rand = { workspace = true }
+
+[[bin]]
+name = "trace-bench"
+path = "src/bin/trace_bench.rs"
+
+[[bin]]
+name = "trace-replay"
+path = "src/bin/trace_replay.rs"

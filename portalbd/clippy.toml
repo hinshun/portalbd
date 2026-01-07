@@ -1,0 +1,37 @@
+# TigerStyle: Prevent accidental use of non-deterministic APIs
+# These guards ensure reproducible DST (Deterministic Simulation Testing)
+
+# Disallow types that introduce non-determinism
+disallowed-types = [
+    # Random number generation
+    { path = "rand::rngs::ThreadRng", reason = "Use seeded PRNG for determinism." },
+    { path = "rand::rngs::StdRng", reason = "Use seeded PRNG for determinism." },
+
+    # Time sources
+    { path = "std::time::SystemTime", reason = "Use injected clock for determinism." },
+    { path = "std::time::Instant", reason = "Use injected clock for determinism." },
+]
+
+# Disallow methods that introduce non-determinism
+disallowed-methods = [
+    # Random generation
+    { path = "rand::random", reason = "Use seeded PRNG for determinism" },
+    { path = "rand::thread_rng", reason = "Use seeded PRNG for determinism" },
+    { path = "rand::Rng::gen", reason = "Use seeded PRNG for determinism" },
+    
+    # Time
+    { path = "std::time::SystemTime::now", reason = "Use injected clock for determinism" },
+    { path = "std::time::Instant::now", reason = "Use injected clock for determinism" },
+    { path = "chrono::Utc::now", reason = "Use injected clock for determinism" },
+    
+    # Threading (for single-threaded determinism)
+    { path = "std::thread::spawn", reason = "Use tokio::task::spawn for deterministic scheduling" },
+    { path = "std::thread::sleep", reason = "Use clock.sleep() for determinism" },
+    
+    # Tokio time (should use mock clock)
+    { path = "tokio::time::sleep", reason = "Use clock.sleep() for determinism in DST mode" },
+    { path = "tokio::time::interval", reason = "Use clock.ticker() for determinism in DST mode" },
+    
+    # UUID
+    { path = "uuid::Uuid::new_v4", reason = "Use seeded UUID generator for determinism" },
+]
