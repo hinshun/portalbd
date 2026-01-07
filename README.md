@@ -6,7 +6,7 @@ portalbd is a **Network Block Device (NBD) server** backed by object storage,
 turning any filesystem into a portal to bottomless storage with atomic
 snapshots for point-in-time recovery.
 
-![portalbd](docs/portalbd.png)
+<img src="docs/portalbd.png" height="300">
 
 [Key features](#key-features) •
 [Usage](#usage) •
