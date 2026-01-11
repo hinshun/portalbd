@@ -150,7 +150,10 @@ pub struct LsmConfig {
     pub l0_max_ssts: Option<u32>,
     pub max_unflushed_bytes: Option<u64>,
     pub filter_bits_per_key: Option<u32>,
+
+    /// TODO: Not supported by SlateDB v0.9.2 yet. Reserved for future use.
     pub block_cache_size_bytes: Option<u64>,
+
     /// Compression codec for SST blocks. Default is Lz4.
     /// Compression reduces storage size and network I/O at the cost of CPU.
     pub compression_codec: Option<CompressionCodec>,
